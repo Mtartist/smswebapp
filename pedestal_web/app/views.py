@@ -32,8 +32,8 @@ class ContentModelView(CompactCRUDMixin, ModelView):
 
     related_views = [MediaFilesModelView]
 
-    show_template = 'appbuilder/general/model/show_cascade.html'
-    edit_template = 'appbuilder/general/model/edit_cascade.html'
+    #show_template = 'appbuilder/general/model/show_cascade.html'
+    #edit_template = 'appbuilder/general/model/edit_cascade.html'
 
     add_columns = ['name','artist', 'created']
     edit_columns = ['name','artist', 'created']
