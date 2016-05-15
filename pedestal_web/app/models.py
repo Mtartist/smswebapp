@@ -3,6 +3,8 @@ from flask.ext.appbuilder.models.mixins import AuditMixin, FileColumn, ImageColu
 from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Index, \
 Integer, String, text
 from sqlalchemy.orm import relationship
+from flask_appbuilder.filemanager import get_file_original_name
+from flask import Markup, url_for
 
 
 class AbPermission(Model):
@@ -109,7 +111,7 @@ class Alert(Model):
     time_sent = Column(DateTime, index=True)
     created_by = Column(String(100), nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime, index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     alert_type = relationship(u'ModelType')
     service = relationship(u'Service')
@@ -125,7 +127,7 @@ class Artist(Model):
     contact = Column(String(50))
     status = Column(Integer, nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime, index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     keyword = relationship(u'Keyword')
 
@@ -142,7 +144,7 @@ class ArtistRevShare(Model):
     rev_share = Column(String(30), nullable=False, index=True)
     status = Column(Integer, nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime, index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     artist = relationship(u'Artist')
     contract = relationship(u'Contract')
@@ -160,7 +162,7 @@ class BulkSender(Model):
     sdp_access_code = Column(String(50), nullable=False)
     status = Column(Integer, nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
 
 class BulkSenderClient(Model):
@@ -187,7 +189,7 @@ class Client(Model):
     active = Column(Integer, nullable=False, index=True, server_default=text("'0'"))
     credit_units = Column(String(30), nullable=False)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
 
 class ContactGroup(Model):
@@ -198,7 +200,7 @@ class ContactGroup(Model):
     client_id = Column(ForeignKey(u'client.id'), nullable=False, index=True)
     status = Column(Integer, nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     client = relationship(u'Client')
 
@@ -223,9 +225,9 @@ class Content(Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
     artist_id = Column(ForeignKey(u'artist.id'), nullable=False, index=True)
-    status = Column(Integer, nullable=False, index=True)
+    status = Column(Integer, nullable=False, index=True, server_default=text("'0'"))
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     artist = relationship(u'Artist')
 
@@ -254,7 +256,7 @@ class Contract(Model):
     end_date = Column(DateTime, nullable=False, index=True)
     status = Column(Integer, nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     artist = relationship(u'Artist')
 
@@ -271,7 +273,7 @@ class Inbox(Model):
     transaction_id = Column(ForeignKey(u'transaction.id'), nullable=False, index=True)
     profile_id = Column(ForeignKey(u'profile.id'), nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     profile = relationship(u'Profile')
     service = relationship(u'Service')
@@ -287,7 +289,7 @@ class Keyword(Model):
     model = Column(String(100), nullable=False, index=True)
     status = Column(Integer, nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
 
 class MediaFile(Model):
@@ -295,11 +297,19 @@ class MediaFile(Model):
 
     id = Column(Integer, primary_key=True)
     content_id = Column(ForeignKey(u'content.id'), nullable=False, unique=True)
-    file_name = Column(String(120), nullable=False)
+    file_name = Column(FileColumn, nullable=False)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     content = relationship(u'Content')
+
+    def download(self):
+        return Markup(
+            '<a href="' + url_for('MediaFilesModelView.download',
+                 filename=str(self.file_name)) + '">Download</a>')
+
+    def media_file_name(self):
+        return get_file_original_name(str(self.file_name))
 
 
 class ModelType(Model):
@@ -313,7 +323,7 @@ class ModelType(Model):
     model = Column(String(150), nullable=False, index=True)
     status = Column(Integer, nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
 
 class Network(Model):
@@ -323,7 +333,7 @@ class Network(Model):
     name = Column(String(30), nullable=False, unique=True)
     status = Column(Integer, nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
 
 class Outbox(Model):
@@ -355,7 +365,7 @@ class Profile(Model):
     msisdn = Column(String(50), nullable=False, unique=True)
     network_id = Column(ForeignKey(u'network.id'), nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     network = relationship(u'Network')
 
@@ -373,7 +383,7 @@ class SdpProduct(Model):
     keyword_id = Column(ForeignKey(u'keyword.id'), nullable=False, index=True)
     status = Column(Integer, nullable=False)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     keyword = relationship(u'Keyword')
     shortcode = relationship(u'ShortCode')
@@ -392,7 +402,7 @@ class Service(Model):
     service_type_id = Column(ForeignKey(u'model_type.id'), nullable=False, index=True)
     status = Column(Integer, nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     client = relationship(u'Client')
     keyword = relationship(u'Keyword')
@@ -408,7 +418,7 @@ class ShortCode(Model):
     status = Column(Integer, nullable=False, index=True)
     client_id = Column(ForeignKey(u'client.id'), nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     client = relationship(u'Client')
     keyword = relationship(u'Keyword')
@@ -426,7 +436,7 @@ class Subscriber(Model):
     status = Column(Integer, nullable=False, index=True)
     transaction_id = Column(ForeignKey(u'transaction.id'), nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     profile = relationship(u'Profile')
     service = relationship(u'Service')
@@ -441,7 +451,7 @@ class Ticket(Model):
     status = Column(Integer, nullable=False, index=True)
     remarks = Column(String(200), nullable=False)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     profile = relationship(u'Profile')
 
@@ -453,7 +463,7 @@ class Transaction(Model):
     model = Column(String(50), nullable=False)
     foreign_key = Column(Integer, index=True)
     created = Column(DateTime, nullable=False, index=True)
-    modified = Column(DateTime, nullable=False, index=True)
+    modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
 
 class UserClient(Model):

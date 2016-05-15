@@ -14,7 +14,7 @@ SQLALCHEMY_DATABASE_URI = 'mysql://root:@m0s@localhost/pedestal_db'
 CSRF_ENABLED = True
 
 #------------------------------
-# GLOBALS FOR APP Builder 
+# GLOBALS FOR APP Builder
 #------------------------------
 # Uncomment to setup Your App name
 #APP_NAME = "My App Name"
@@ -92,13 +92,12 @@ IMG_UPLOAD_URL = '/static/uploads/'
 #APP_THEME = "cerulean.css"
 #APP_THEME = "amelia.css"
 #APP_THEME = "cosmo.css"
-#APP_THEME = "cyborg.css"  
+APP_THEME = "cyborg.css"
 #APP_THEME = "flatly.css"
 #APP_THEME = "journal.css"
 #APP_THEME = "readable.css"
 #APP_THEME = "simplex.css"
-#APP_THEME = "slate.css"   
+#APP_THEME = "slate.css"
 #APP_THEME = "spacelab.css"
 #APP_THEME = "united.css"
 #APP_THEME = "yeti.css"
-
