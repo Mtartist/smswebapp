@@ -35,8 +35,8 @@ class ContentModelView(CompactCRUDMixin, ModelView):
     show_template = 'appbuilder/general/model/show_cascade.html'
     edit_template = 'appbuilder/general/model/edit_cascade.html'
 
-    add_columns = ['name','artist_id', 'created']
-    edit_columns = ['name','artist_id', 'created']
+    add_columns = ['name','artist', 'created']
+    edit_columns = ['name','artist', 'created']
     show_fieldsets = [
         ('Info', {'fields': ['name','artist_id', 'created']}),
         ('Audit', {'fields': ['modified'], 'expanded': False})
@@ -65,10 +65,10 @@ def page_not_found(e):
 
 db.create_all()
 appbuilder.add_view(AlertModelView, "Alerts", icon="fa-table",
-     category="Alerts",
+     category="Content Management",
                 category_icon="fa-envelope")
 appbuilder.add_view(ServiceModelView, "Services", icon="fa-table",
-     category="Services")
+     category="Content Management")
 appbuilder.add_view(ContentModelView, "Contents", icon="fa-folder-open-o",
      category="Multimedia",
                 category_icon="fa-envelope")
