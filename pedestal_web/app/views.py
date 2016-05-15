@@ -49,6 +49,8 @@ class AlertModelView(ModelView):
     related_views = [ServiceModelView, ContentModelView, ShortcodeModelView]
     edit_exclude_columns = ['created_by', 'modified', 'time_sent']
     add_exclude_columns = ['created_by', 'sent', 'modified', 'time_sent']
+    add_columns = ['content_id', 'message', 'created']
+    edit_columns = ['content_id', 'message', 'created']
 
 """
     Application wide 404 error handler
