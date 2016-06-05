@@ -1,7 +1,7 @@
 from flask.ext.appbuilder import Model
-from flask.ext.appbuilder.models.mixins import AuditMixin, FileColumn, ImageColumn
+from flask.ext.appbuilder.models.mixins import FileColumn
 from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Index, \
-Integer, String, text
+Integer, String, text, Text
 from sqlalchemy.orm import relationship
 from flask_appbuilder.filemanager import get_file_original_name
 from flask import Markup, url_for
@@ -100,21 +100,26 @@ class Alert(Model):
     __tablename__ = 'alert'
 
     id = Column(Integer, primary_key=True)
-    message = Column(String)
+    message = Column(Text, nullable=False)
     msisdn = Column(String(200))
-    shortcode = Column(String(50))
-    content_id = Column(Integer, index=True)
+    shortcode = Column(ForeignKey(u'short_code.id'), nullable=False, index=True)
+    content_id = Column(ForeignKey(u'content.id'), index=True)
     service_id = Column(ForeignKey(u'service.id'), index=True)
-    sent = Column(Integer, nullable=False, index=True)
+    sent = Column(Integer, nullable=False, index=True, server_default=text("'0'"))
     scheduled_time = Column(DateTime, nullable=False, index=True)
     alert_type_id = Column(ForeignKey(u'model_type.id'), nullable=False, index=True)
     time_sent = Column(DateTime, index=True)
-    created_by = Column(String(100), nullable=False, index=True)
-    created = Column(DateTime, nullable=False, index=True)
+    created_by = Column(String(100), index=True)
+    created = Column(DateTime, index=True)
     modified = Column(DateTime, index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     alert_type = relationship(u'ModelType')
+    content = relationship(u'Content')
     service = relationship(u'Service')
+    short_code = relationship(u'ShortCode')
+
+    def __repr__(self):
+        return self.message
 
 
 class Artist(Model):
@@ -130,6 +135,9 @@ class Artist(Model):
     modified = Column(DateTime, index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     keyword = relationship(u'Keyword')
+
+    def __repr__(self):
+        return self.name
 
 
 class ArtistRevShare(Model):
@@ -149,6 +157,9 @@ class ArtistRevShare(Model):
     artist = relationship(u'Artist')
     contract = relationship(u'Contract')
 
+    def __repr__(self):
+        return self.artist_id
+
 
 class BulkSender(Model):
     __tablename__ = 'bulk_sender'
@@ -164,6 +175,9 @@ class BulkSender(Model):
     created = Column(DateTime, nullable=False, index=True)
     modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
+    def __repr__(self):
+        return self.name
+
 
 class BulkSenderClient(Model):
     __tablename__ = 'bulk_sender_client'
@@ -178,6 +192,9 @@ class BulkSenderClient(Model):
     bulksender = relationship(u'BulkSender')
     client = relationship(u'Client')
 
+    def __repr__(self):
+        return self.bulksender.name
+
 
 class Client(Model):
     __tablename__ = 'client'
@@ -191,6 +208,9 @@ class Client(Model):
     created = Column(DateTime, nullable=False, index=True)
     modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
+    def __repr__(self):
+        return self.name
+
 
 class ContactGroup(Model):
     __tablename__ = 'contact_group'
@@ -203,6 +223,9 @@ class ContactGroup(Model):
     modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     client = relationship(u'Client')
+
+    def __repr__(self):
+        return self.name
 
 
 class ContactGroupProfile(Model):
@@ -218,6 +241,9 @@ class ContactGroupProfile(Model):
     contactgroup = relationship(u'ContactGroup')
     profile = relationship(u'Profile')
 
+    def __repr__(self):
+        return self.contactgroup_id
+
 
 class Content(Model):
     __tablename__ = 'content'
@@ -230,6 +256,9 @@ class Content(Model):
     modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     artist = relationship(u'Artist')
+
+    def __repr__(self):
+        return self.name
 
 
 class ContentService(Model):
@@ -245,6 +274,9 @@ class ContentService(Model):
     content = relationship(u'Content')
     service = relationship(u'Service')
 
+    def __repr__(self):
+        return self.content_id
+
 
 class Contract(Model):
     __tablename__ = 'contract'
@@ -259,6 +291,9 @@ class Contract(Model):
     modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     artist = relationship(u'Artist')
+
+    def __repr__(self):
+        return self.artist_id
 
 
 class Inbox(Model):
@@ -280,6 +315,9 @@ class Inbox(Model):
     short_code = relationship(u'ShortCode')
     transaction = relationship(u'Transaction')
 
+    def __repr__(self):
+        return self.message
+
 
 class Keyword(Model):
     __tablename__ = 'keyword'
@@ -290,6 +328,9 @@ class Keyword(Model):
     status = Column(Integer, nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
     modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+
+    def __repr__(self):
+        return self.name
 
 
 class MediaFile(Model):
@@ -325,6 +366,9 @@ class ModelType(Model):
     created = Column(DateTime, nullable=False, index=True)
     modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
+    def __repr__(self):
+        return self.model
+
 
 class Network(Model):
     __tablename__ = 'network'
@@ -334,6 +378,9 @@ class Network(Model):
     status = Column(Integer, nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
     modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+
+    def __repr__(self):
+        return self.name
 
 
 class Outbox(Model):
@@ -357,6 +404,9 @@ class Outbox(Model):
     alert = relationship(u'Alert')
     transaction = relationship(u'Transaction')
 
+    def __repr__(self):
+        return self.text
+
 
 class Profile(Model):
     __tablename__ = 'profile'
@@ -368,6 +418,9 @@ class Profile(Model):
     modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     network = relationship(u'Network')
+
+    def __repr__(self):
+        return self.msisdn
 
 
 class SdpProduct(Model):
@@ -387,6 +440,9 @@ class SdpProduct(Model):
 
     keyword = relationship(u'Keyword')
     shortcode = relationship(u'ShortCode')
+
+    def __repr__(self):
+        return self.service
 
 
 class Service(Model):
@@ -408,6 +464,9 @@ class Service(Model):
     keyword = relationship(u'Keyword')
     service_type = relationship(u'ModelType')
 
+    def __repr__(self):
+        return self.name
+
 
 class ShortCode(Model):
     __tablename__ = 'short_code'
@@ -415,13 +474,16 @@ class ShortCode(Model):
     id = Column(Integer, primary_key=True)
     short_code = Column(String(50), nullable=False, index=True)
     keyword_id = Column(ForeignKey(u'keyword.id'), nullable=False, index=True)
-    status = Column(Integer, nullable=False, index=True)
+    status = Column(Integer, nullable=False, index=True, server_default=text("'1'"))
     client_id = Column(ForeignKey(u'client.id'), nullable=False, index=True)
     created = Column(DateTime, nullable=False, index=True)
     modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     client = relationship(u'Client')
     keyword = relationship(u'Keyword')
+
+    def __repr__(self):
+        return self.short_code
 
 
 class Subscriber(Model):
@@ -442,6 +504,9 @@ class Subscriber(Model):
     service = relationship(u'Service')
     transaction = relationship(u'Transaction')
 
+    def __repr__(self):
+        return self.profile_id
+
 
 class Ticket(Model):
     __tablename__ = 'ticket'
@@ -455,6 +520,9 @@ class Ticket(Model):
 
     profile = relationship(u'Profile')
 
+    def __repr__(self):
+        return self.profile_id
+
 
 class Transaction(Model):
     __tablename__ = 'transaction'
@@ -464,6 +532,9 @@ class Transaction(Model):
     foreign_key = Column(Integer, index=True)
     created = Column(DateTime, nullable=False, index=True)
     modified = Column(DateTime,  index=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+
+    def __repr__(self):
+        return self.model
 
 
 class UserClient(Model):
@@ -475,3 +546,6 @@ class UserClient(Model):
 
     client = relationship(u'Client')
     user = relationship(u'AbUser')
+
+    def __repr__(self):
+        return self.user_id
