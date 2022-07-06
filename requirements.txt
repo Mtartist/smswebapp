@@ -26,7 +26,7 @@ django-registration-bootstrap==0.1.0
 dnspython==1.11.1
 duplicity==0.6.23
 gyp==0.1
-html5lib==0.999
+html5lib==0.999999999
 httplib2==0.8
 kombu==3.0.7
 librabbitmq==1.0.3
